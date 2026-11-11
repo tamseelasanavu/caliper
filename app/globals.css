@@ -1,0 +1,220 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-display: var(--font-rokkitt), "Rokkitt", sans-serif;
+  --font-body: var(--font-literata), "Literata", serif;
+}
+
+@theme {
+  --color-ground: #161c1a;
+  --color-surface: #1f2725;
+  --color-ink: #e3e2da;
+  --color-muted: #b3b9b1;
+  --color-jade: #9fc7b8;
+  --color-alert: #e6a690;
+  --radius-page: 16px;
+}
+
+html {
+  scroll-behavior: smooth;
+  color-scheme: dark;
+  scrollbar-width: thin;
+  scrollbar-color: #3a443f var(--color-ground);
+}
+
+body {
+  background: var(--color-ground);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  text-wrap: pretty;
+}
+
+section[id],
+main[id] {
+  scroll-margin-top: 5.5rem;
+}
+
+/* Type steps */
+.text-step-small {
+  font-size: clamp(0.8125rem, 0.79rem + 0.1vw, 0.875rem);
+}
+.text-step-body {
+  font-size: clamp(1.125rem, 1.05rem + 0.3vw, 1.3125rem);
+}
+.text-step-lead {
+  font-size: clamp(1.25rem, 1.1rem + 0.7vw, 1.625rem);
+}
+.text-step-subhead {
+  font-size: clamp(1.375rem, 1.15rem + 1vw, 2rem);
+}
+.text-step-head {
+  font-size: clamp(2rem, 1.3rem + 3.2vw, 4rem);
+}
+
+.font-display {
+  font-family: var(--font-display);
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  line-height: 0.92;
+  text-wrap: balance;
+}
+
+.font-ui {
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  letter-spacing: 0;
+  text-wrap: normal;
+}
+
+/* Skip link (keyboard only) */
+.skip-link {
+  z-index: 100;
+}
+.skip-link:not(:focus) {
+  position: absolute;
+  clip-path: inset(50%);
+  overflow: hidden;
+  white-space: nowrap;
+}
+.skip-link:focus {
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  background: var(--color-jade);
+  color: var(--color-ground);
+  font-size: 0.875rem;
+  padding: 0.5rem 1rem;
+  border-radius: 2px;
+  outline: 2px solid var(--color-ink);
+  outline-offset: 2px;
+}
+
+/* Browser surfaces */
+:focus-visible {
+  outline: 2px solid var(--color-jade);
+  outline-offset: 3px;
+}
+
+#main:focus {
+  outline: none;
+}
+
+::selection {
+  background: var(--color-jade);
+  color: var(--color-ground);
+}
+
+input,
+textarea,
+select {
+  caret-color: var(--color-jade);
+  accent-color: var(--color-jade);
+}
+
+/* ---------- Motion layer ---------- */
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.7s ease, transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+[data-reveal].is-in {
+  opacity: 1;
+  transform: none;
+}
+
+.hero-frame {
+  transition: opacity 1.6s ease;
+  opacity: 0;
+}
+.hero-frame.is-active {
+  opacity: 1;
+}
+
+.btn-press {
+  transition: transform 0.15s ease, background-color 0.2s ease, color 0.2s ease;
+}
+.btn-press:active {
+  transform: scale(0.98);
+}
+
+.btn-outline {
+  border: 1px solid color-mix(in srgb, var(--color-ground) 32%, transparent);
+  transition: transform 0.15s ease, background-color 0.2s ease,
+    color 0.2s ease, border-color 0.2s ease;
+}
+.btn-outline:active {
+  transform: scale(0.98);
+}
+
+.link-shift {
+  transition: color 0.2s ease;
+}
+
+.card-lift {
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.img-breathe {
+  transition: transform 2.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .btn-press:hover {
+    background-color: color-mix(in srgb, var(--color-jade) 76%, var(--color-ground));
+  }
+  .btn-outline:hover {
+    background-color: var(--color-ground);
+    color: var(--color-ink);
+    border-color: var(--color-ground);
+  }
+  a:hover > .link-shift,
+  .link-shift:hover {
+    color: var(--color-jade);
+  }
+  .card-lift:hover {
+    transform: translateY(-4px);
+  }
+  .group:hover .img-breathe {
+    transform: scale(1.03);
+  }
+}
+
+.ig-caption {
+  background: rgba(22, 28, 26, 0.86);
+}
+
+@media (hover: none) {
+  .ig-caption {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  [data-reveal] {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  .hero-frame {
+    transition: none;
+  }
+  .btn-press,
+  .btn-outline,
+  .link-shift,
+  .card-lift,
+  .img-breathe,
+  .ig-caption {
+    transition: none;
+  }
+  .card-lift:active,
+  .btn-press:active,
+  .btn-outline:active {
+    transform: none;
+  }
+}
