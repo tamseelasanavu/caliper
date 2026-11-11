@@ -80,9 +80,18 @@ From `inspect.mjs` (no FAILs):
 
 ```powershell
 npm run build          # type check + production build (green 2026-11-11)
+npm run lint           # ESLint flat config (clean 2026-11-11)
 npm run dev            # dev server, default port 3000
 npm run start          # serve the production build
 ```
+
+Vercel: team `caliper5`, project `caliper-creations`, production
+**https://caliper-creations.vercel.app** (Next.js preset, Node 26.x, region iad1).
+GitHub `tamseelasanavu/caliper` is connected; `vercel link` created
+`.vercel/repo.json` + `.env.production.local` (both git-ignored). Deploy manually
+with `npx vercel --prod` if a push does not trigger a build.
+The project has `vercel_authentication` deployment protection; production is
+currently public (verified 200 on `/`, `/products`, `/admin/login`).
 
 Admin at `/admin/login`. Dev fallback password is `calliper-admin` when
 `ADMIN_PASSWORD` is unset and `NODE_ENV !== production`.
@@ -123,12 +132,30 @@ Desktop was not running at the time of this audit.)
 1. Confirm the real Instagram handle (currently `calliper_creations` in
    `lib/settings.ts` and `data/settings.json`) and phone/contact details.
 2. Add CI checks (`npm run lint && npm run build`) once a CI target exists.
-3. Rebuild/restart and expand the catalogue content (products, photos, copy) and
-   swap `@calliper_creations`/feed data if the handle changes.
-4. Commit the admin/CMS batch (do not commit until asked).
-5. Rebuild and redeploy the Docker image (`docker build -t calliper-creations .`).
+3. Expand the catalogue content (products, photos, copy) and swap
+   `@calliper_creations`/feed data if the handle changes.
+4. Set Vercel env `NEXT_PUBLIC_SITE_URL`, `ADMIN_PASSWORD`, `ADMIN_SECRET`; move
+   the JSON store to Vercel Blob/KV if the admin must work in production.
+5. Redeploy the Docker image (`docker build -t calliper-creations .`) if hosting
+   on a writable filesystem instead.
 
 ## Changelog
+
+### 2026-11-11 — session 4 (Vercel 404)
+
+- `caliper-creations.vercel.app` returned Vercel's edge `NOT_FOUND`: the only
+  production deployment (12:22, from the empty/reset repo state) had no working
+  output attached to the domain. Build logs showed the deployment was Ready.
+- Confirmed the repo had been reset to empty both locally and on GitHub; remote
+  recreated earlier this session at `4e009d4`.
+- Verified Vercel auth via `npx vercel` (scope `caliper5`, project
+  `caliper-creations`), linked the folder (`vercel link`), deployed with
+  `npx vercel --prod`. Production now serves `/`, `/products`,
+  `/products/[slug]`, `/admin/login` with 200 and correct canonical URL.
+- `vercel git connect` reports `tamseelasanavu/caliper` already connected.
+- Note: on Vercel the filesystem is read-only, so JSON writes/uploads from the
+  admin will fail; storefront reads work. A durable store (Blob/KV/DB) is needed
+  for a live CMS there.
 
 ### 2026-11-11 — session 3 (ESLint)
 
