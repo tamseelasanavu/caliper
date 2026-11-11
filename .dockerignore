@@ -1,6 +1,0 @@
-node_modules
-tmp
-.next
-.git
-*.log
-build.log
