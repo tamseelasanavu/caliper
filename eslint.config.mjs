@@ -11,6 +11,7 @@ const eslintConfig = [
   {
     ignores: [
       ".next/**",
+      ".vercel/**",
       "node_modules/**",
       "tmp/**",
       "public/uploads/**",

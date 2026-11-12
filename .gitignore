@@ -29,6 +29,9 @@ yarn-error.log*
 # uploaded product photos
 /public/uploads/
 
+# password set from the admin dashboard (never commit)
+/data/admin-auth.json
+
 # vercel
 .vercel
 

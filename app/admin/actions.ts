@@ -8,7 +8,12 @@ import {
   isAdminConfigured,
   passwordMatches,
   requireAdmin,
+  updatePassword,
 } from "@/lib/auth";
+import {
+  MAX_PASSWORD_LENGTH,
+  MIN_PASSWORD_LENGTH,
+} from "@/lib/auth-constants";
 import {
   createProduct,
   deleteProduct,
@@ -194,7 +199,7 @@ export async function loginAction(
   _prev: ActionState,
   formData: FormData
 ): Promise<ActionState> {
-  if (!isAdminConfigured()) {
+  if (!(await isAdminConfigured())) {
     return {
       error:
         "Admin access is not configured. Set ADMIN_PASSWORD in the server environment and restart.",
@@ -202,11 +207,60 @@ export async function loginAction(
   }
 
   const password = text(formData, "password");
-  if (!passwordMatches(password)) {
+  if (!(await passwordMatches(password))) {
     return { error: "That password is not correct. Try again." };
   }
   await createSession();
   redirect("/admin");
+}
+
+export async function changePasswordAction(
+  _prev: ActionState,
+  formData: FormData
+): Promise<ActionState> {
+  await requireAdmin();
+
+  const currentPassword = text(formData, "currentPassword");
+  const newPassword = text(formData, "newPassword");
+  const confirmPassword = text(formData, "confirmPassword");
+
+  const fieldErrors: Record<string, string> = {};
+  if (!currentPassword) {
+    fieldErrors.currentPassword = "Enter your current password.";
+  }
+  if (newPassword.length < MIN_PASSWORD_LENGTH) {
+    fieldErrors.newPassword = `Use at least ${MIN_PASSWORD_LENGTH} characters.`;
+  } else if (newPassword.length > MAX_PASSWORD_LENGTH) {
+    fieldErrors.newPassword = `Keep it under ${MAX_PASSWORD_LENGTH} characters.`;
+  }
+  if (confirmPassword !== newPassword) {
+    fieldErrors.confirmPassword = "The passwords do not match.";
+  }
+
+  if (Object.keys(fieldErrors).length > 0) {
+    return { error: "Please fix the highlighted fields.", fieldErrors };
+  }
+
+  if (!(await passwordMatches(currentPassword))) {
+    return {
+      error: "That current password is not correct.",
+      fieldErrors: { currentPassword: "Current password is not correct." },
+    };
+  }
+
+  if (currentPassword === newPassword) {
+    return {
+      error: "Choose a password different from the current one.",
+      fieldErrors: { newPassword: "Choose a new password." },
+    };
+  }
+
+  await updatePassword(newPassword);
+  await createSession();
+  return {
+    success:
+      "Password updated. You stay signed in here; other sessions were signed out.",
+  };
 }
 
 export async function logoutAction(): Promise<void> {

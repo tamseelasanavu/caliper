@@ -2,7 +2,11 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { isAuthenticated, usesDefaultPassword } from "@/lib/auth";
+import {
+  isAdminConfigured,
+  isAuthenticated,
+  usesDefaultPassword,
+} from "@/lib/auth";
 import { getSettings } from "@/lib/settings";
 import { LoginForm } from "@/components/admin/login-form";
 
@@ -16,7 +20,8 @@ export default async function LoginPage() {
 
   const settings = await getSettings();
   const showDefaultHint =
-    process.env.NODE_ENV !== "production" && usesDefaultPassword();
+    process.env.NODE_ENV !== "production" && (await usesDefaultPassword());
+  const configured = await isAdminConfigured();
 
   return (
     <main
@@ -62,7 +67,10 @@ export default async function LoginPage() {
             content.
           </p>
 
-          <LoginForm showDefaultHint={showDefaultHint} />
+          <LoginForm
+            showDefaultHint={showDefaultHint}
+            configured={configured}
+          />
 
           <Link
             href="/"

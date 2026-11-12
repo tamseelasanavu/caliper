@@ -4,7 +4,7 @@
 > and what comes next, so a new session can continue without re-discovering the
 > project. Append a dated entry under "Changelog" after every work session.
 
-Last updated: 2026-11-11
+Last updated: 2026-11-12
 
 ## What this is
 
@@ -28,6 +28,8 @@ the admin/CMS work).
   and written through `lib/data-store.ts` (`DATA_DIR`, default `./data`, process
   level write queue, atomic temp-file rename).
 - Auth: single shared admin password, HMAC-signed httpOnly cookie (`lib/auth.ts`).
+  The password can be changed from the dashboard; the new one is stored as a
+  scrypt hash in `data/admin-auth.json` (or Blob) and overrides `ADMIN_PASSWORD`.
 - Product photos: project's own Instagram photos in `public/assets/calliper/`,
   downloaded open-collection images in `public/assets/`, user uploads in
   `public/uploads/` (git-ignored, created at runtime).
@@ -94,7 +96,10 @@ The project has `vercel_authentication` deployment protection; production is
 currently public (verified 200 on `/`, `/products`, `/admin/login`).
 
 Admin at `/admin/login`. Dev fallback password is `calliper-admin` when
-`ADMIN_PASSWORD` is unset and `NODE_ENV !== production`.
+`ADMIN_PASSWORD` is unset and `NODE_ENV !== production`. Once the password is
+changed in the dashboard (Storefront → Admin password), the stored hash is used
+instead; `ADMIN_PASSWORD` becomes only the initial seed and can be rotated
+without a redeploy.
 
 Env (see `.env.example`): `ADMIN_PASSWORD`, `ADMIN_SECRET`, optional `DATA_DIR`,
 `ADMIN_COOKIE_SECURE`.
@@ -140,6 +145,28 @@ Desktop was not running at the time of this audit.)
    on a writable filesystem instead.
 
 ## Changelog
+
+### 2026-11-12 — session 5 (admin password change)
+
+- Added in-dashboard password change: `changePasswordAction` in
+  `app/admin/actions.ts`, `components/admin/password-form.tsx`, rendered as the
+  "Admin password" section on `/admin/settings`.
+- `lib/auth.ts` now stores a scrypt-hashed credential (`salt`, `hash`,
+  `updatedAt`) in `data/admin-auth.json` through the data store, so it survives
+  redeploys on Vercel Blob and overrides `ADMIN_PASSWORD`. Passwords need 8–200
+  characters; the current password is required to change it.
+- Session tokens are now `v2` and include a credential revision (hash prefix), so
+  changing the password signs out every other session; the active session is
+  reissued after the change.
+- `isAdminConfigured`, `passwordMatches`, `usesDefaultPassword` are async; login
+  page passes `configured` to `LoginForm`. Shared limits live in
+  `lib/auth-constants.ts` (client-safe).
+- `.gitignore` excludes `data/admin-auth.json`; `.env.example` documents the
+  dashboard override. `npm run lint` and `npm run build` pass.
+- Note: when Blob storage is enabled the hash lives in a public-access blob, so
+  the store URL is the only protection; the scrypt salt/hash keeps it from being
+  directly usable. Keep `ADMIN_SECRET` set so session signatures do not fall back
+  to the password.
 
 ### 2026-11-11 — session 4 (Vercel 404)
 

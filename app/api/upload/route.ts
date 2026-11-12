@@ -1,9 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
+import { put } from "@vercel/blob";
 
 const MAX_SIZE = 5 * 1024 * 1024; // 5MB
 const ALLOWED = ["image/jpeg", "image/png"];
+
+const BLOB_ENABLED = Boolean(
+  process.env.BLOB_READ_WRITE_TOKEN || process.env.BLOB_STORE_ID
+);
 
 export async function POST(req: NextRequest) {
   try {
@@ -21,6 +26,17 @@ export async function POST(req: NextRequest) {
     }
 
     const safeName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "")}`;
+
+    if (BLOB_ENABLED) {
+      const blob = await put(`uploads/${safeName}`, file, {
+        access: "public",
+        addRandomSuffix: false,
+        contentType: file.type,
+        cacheControlMaxAge: 60 * 60 * 24 * 30,
+      });
+      return NextResponse.json({ url: blob.url });
+    }
+
     const bytes = Buffer.from(await file.arrayBuffer());
 
     const dir = path.join(process.cwd(), "public", "uploads");
